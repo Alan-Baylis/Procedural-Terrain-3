@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: fdce5e84be13fcd438ca2af421317f0c
+timeCreated: 1425599911
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - landscape2: {instanceID: 0}
+  - matLandscape2: {fileID: 2100000, guid: 61d036a7659c70246b71d6f548ab5803, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

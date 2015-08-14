@@ -1,0 +1,76 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class CreateNewMesh2 : MonoBehaviour {
+	public GameObject landscape2;
+	public Material matLandscape2;
+	private int xSize = 50;
+	private int zSize = 200;
+	// Use this for initialization
+	void Start () {
+		landscape2 = new GameObject("Landscape2" , typeof(MeshFilter), typeof(MeshRenderer));
+		Mesh mesh = new Mesh();
+		List<Vector3> vertices = new List<Vector3>();
+		List<int> triangles = new List<int>();
+		List<Color> colors = new List<Color>();
+
+		float perlinXScale = 25.01f;
+		float perlinZScale = 25.01f;
+		float perlinHeightMult = 10f;
+
+		TerrainPerlin land = new TerrainPerlin(1.01f, 0.10f, 999, 0);
+		land.addPass (0, 40, 6f, 0, 0);
+		land.addLayer (70, 80, 99, 0, 40);
+		land.addPass (0, 3, .0f, 99, 0);
+		land.addPass (1, 1.01f, 3f, 99, 0);
+		land.addPass (0, 2, -80f, 99, 0);
+		land.addLayer (50, 20, 99, 0, 10);
+		land.addPass (2, 1.01f, 1, 99, 0);
+
+		for (int z = 0; z < zSize; z++ ){
+			for (int x = 0; x < xSize; x++){
+				vertices.Add(new Vector3(x, land.getNoise(x,z), z));			//1
+				vertices.Add(new Vector3(x+1, land.getNoise(x+1,z), z));		//2
+				vertices.Add(new Vector3(x, land.getNoise(x,z+1), z+1));		//3
+				vertices.Add(new Vector3(x, land.getNoise(x,z+1), z+1));		//4
+				vertices.Add(new Vector3(x+1, land.getNoise(x+1,z), z));		//5
+				vertices.Add(new Vector3(x+1,land.getNoise(x+1,z+1), z+1));		//6
+
+				Debug.Log(land.getNoise(x,z));
+
+				triangles.Add((z*xSize*6)+(x*6)+5);
+				triangles.Add((z*xSize*6)+(x*6)+4);
+				triangles.Add((z*xSize*6)+(x*6)+3);
+				triangles.Add((z*xSize*6)+(x*6)+2);
+				triangles.Add((z*xSize*6)+(x*6)+1);
+				triangles.Add((z*xSize*6)+(x*6)+0);
+
+				for(int i = 0; i<6; i++){
+					colors.Add (new Color(.5f + Random.Range(0, .1f),land.getNoise(x,z)/40+.5f, .13f + Random.Range(0, .1f), .5f));
+
+				}
+			}
+		}
+
+		MeshFilter meshFilter = landscape2.GetComponent<MeshFilter>();
+		MeshRenderer meshRenderer = landscape2.GetComponent<MeshRenderer>();
+	
+		mesh.vertices = vertices.ToArray();
+		mesh.triangles = triangles.ToArray();
+		mesh.colors = colors.ToArray();
+		meshFilter.mesh = mesh;
+		
+		meshRenderer.material = matLandscape2;
+		meshFilter.mesh.RecalculateNormals();
+		meshFilter.mesh.Optimize ();
+		meshFilter.mesh.MarkDynamic ();
+	}
+
+
+	
+	// Update is called once per frame
+	void Update () {
+	
+	}
+}
