@@ -21,6 +21,8 @@ public class TerrainPerlin : MonoBehaviour {
 	private int brownianOctaves = 4;
 	private List<Color> colorOne = new List<Color>();
 	private List<Color> globalColor = new List<Color> ();
+	public List<float> noiseMax = new List<float> ();
+	public List<float> noiseMin = new List<float> ();
 
 public List<Color> getGlobalColor(){
 		return globalColor;
@@ -65,6 +67,8 @@ public void addPass(int layer, float scale, float height, float heightMax, float
 	this.heightMin[this.heightMin.Count-1].Add (heightMin);
 
 	this.colorOne.Add(colorOne);
+	this.noiseMax.Add (-99999);
+	this.noiseMin.Add (99999);
 
 	this.offset.Add(offset);
 	
@@ -80,8 +84,16 @@ public float getNoise(float x, float z, bool colorizeVertex){
 		for (int layer = 0;  layer < scale.Count ; layer++){
 			for (int pass = 0;  pass < scale[layer].Count ; pass++){
 				float noise = (brownianNoise(x/scale[layer][pass], z/scale[layer][pass])*height[layer][pass]) - offset[layer];
+
+				//DEBUG HEIGHT STUFF
+				//noiseMax[layer] = noise;
+				//noiseMin[layer] = noise;
+				//if (layer > 0 && noise > noiseMax[layer-1]) {noiseMax[layer] = noise;}
+				//if (layer > 0 && noise < noiseMin[layer-1]) {noiseMin[layer] = noise;}
+
+
 				if (noise > heightMax[layer][pass] - offset[layer]){
-					origHeight[layer] += heightMax[layer][pass] - offset[layer];
+					finalHeight += heightMax[layer][pass] - offset[layer];
 
 					// THIS MAKES LAYER CLING TO PREVIOUS LAYER, DOESN'T COVER UNIFORMLY 
 					// LIKE PASS AND CAN BE COLORED, COULD BE VERY USEFUL
@@ -90,13 +102,16 @@ public float getNoise(float x, float z, bool colorizeVertex){
 					//}
 				}
 				else if (noise > heightMin[layer][pass]){
-					origHeight[layer] += noise;
+					finalHeight += noise;
 
 					// THIS MAKES LAYER CLING TO PREVIOUS LAYER, DOESN'T COVER UNIFORMLY 
 					// LIKE PASS AND CAN BE COLORED, COULD BE VERY USEFUL
 					//if (layer > 0) {
 					//	origHeight[layer] += origHeight[layer-1];
 					//}
+				}
+				else {
+					finalHeight += heightMin[layer][pass];
 				}
 
 				//origHeight[layer] += Mathf.Min(noise, heightMin[layer][pass]);
@@ -107,7 +122,6 @@ public float getNoise(float x, float z, bool colorizeVertex){
 
 			if (finalHeight > origHeight[layer] && layer > 0){
 				//finalColor = colorOne[layer - 1];
-				//Debug.Log ("TRUE");
 			}
 			else {
 				finalHeight = origHeight[layer];
@@ -117,8 +131,11 @@ public float getNoise(float x, float z, bool colorizeVertex){
 			}
 
 			finalHeight = Mathf.Max(finalHeight , origHeight[layer]);
+			if ( finalHeight > noiseMax) {noiseMax = finalHeight;}
+			if ( finalHeight < noiseMin) {noiseMin = finalHeight;}
+
 		}
-	
+
 		if (colorizeVertex) {globalColor.Add (finalColor);}
 
 		return finalHeight - minusScale/10;

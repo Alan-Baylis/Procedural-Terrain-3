@@ -46,7 +46,7 @@ public class CreateNewMeshFidelity : MonoBehaviour
 	
 
 				TerrainPerlin land = new TerrainPerlin (2f, 1, 9999, 0, new Color(.75f, .50f, .50f, 1), new Color(0, 1, 0, 1));
-				land.addLayer (50, 100, 999, 20, 50, new Color(1, 0, 0, 1), new Color(0, 1, 0, 1));
+				land.addLayer (50, 150, 999, 20, 50, new Color(1, 0, 0, 1), new Color(0, 1, 0, 1));
 				land.addLayer (60, 100, 999, 0, 50, new Color(0, 1, 0, 1), new Color(0, 1, 0, 1));
 				land.addLayer (70, 150, 999, 0, 75, new Color(0, 0, 1, 1), new Color(0, 1, 0, 1));	
 				//land.addPass (1, 2f, 3f, 0, 0);
@@ -277,8 +277,6 @@ public class CreateNewMeshFidelity : MonoBehaviour
 				MeshRenderer meshRenderer = landscape.GetComponent<MeshRenderer> ();
 	
 				mesh.vertices = vertices.ToArray ();
-				Debug.Log (vertices.Count);
-				Debug.Log(land.getGlobalColor().Count);
 				mesh.triangles = triangles.ToArray ();
 				mesh.colors = land.getGlobalColor().ToArray ();
 				meshFilter.mesh = mesh;
