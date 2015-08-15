@@ -84,9 +84,9 @@ public float getNoise(float x, float z, bool colorizeVertex){
 		for (int layer = 0;  layer < scale.Count ; layer++){
 			origHeight[layer] = (brownianNoise(x/scale[layer][0], z/scale[layer][0])*height[layer][0]) - offset[layer];
 			for (int pass = 1;  pass < scale[layer].Count ; pass++){
-				float noise = (brownianNoise(x/scale[layer][pass], z/scale[layer][pass])*height[layer][pass]) - offset[layer];
-				if (noise > 0) {origHeight[layer] += noise;}
-				origHeight[layer] += Mathf.Min(noise, heightMin[layer][pass]);
+				float noise = (brownianNoise(x/scale[layer][pass], z/scale[layer][pass])*height[layer][pass]);
+				origHeight[layer] += noise;
+				//origHeight[layer] += Mathf.Min(noise, heightMin[layer][pass]);
 				minusScale += scale[layer][pass];
 			}
 
