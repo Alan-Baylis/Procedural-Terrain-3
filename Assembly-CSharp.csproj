@@ -54,6 +54,7 @@
      <Compile Include="Assets\TerrainPerlin.cs" />
      <Compile Include="Assets\TerrainPerlin2.cs" />
      <Compile Include="Assets\TerrainPerlinOrig.cs" />
+     <Compile Include="Assets\TerrainRandomizer.cs" />
      <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\BlendOneOne.shader" />
      <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\NoiseEffectShaderRGB.shader" />
      <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_DepthOfField\SeparableWeightedBlurDof34.shader" />
