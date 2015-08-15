@@ -4,6 +4,7 @@ using System.Collections.Generic;
 //TO DO
 
 //Comment this shit
+//fidelity changed over distance (LOD)
 //add height per layer diagnostic
 //fix color bleed with min height cliffs
 //add max/min functionality to passes
@@ -205,21 +206,34 @@ public class TerrainPerlin : MonoBehaviour
 
 	}
 
+	//This method fractalizes a simple perlin noise pattern when given a simple 2d coordinate
 	private float brownianNoise (float x, float z)
 	{
-
+		//frequency is the horizontal distance or wavelength of the noise pattern per iteration/octave
 		float frequency = 1f;
+		//amplitude is the height multiplier per iteration/octave 
 		float amplitude = .55f;
-		float gain = .55f;
-		float total = 0f;
+		//lacunarity is the ratio of change of the frequency per iteration/octave 
 		float lacunarity = 2f;
+		//gain is what is the ratio of change of amplitude pre iteration/octave
+		float gain = .55f;
+		//the running total for height added up over every octave
+		float total = 0f;
 
+		//loop through "octaves", brownianOctaves is a global variable
 		for (int i = 0; i < brownianOctaves; ++i) {
-			total += Mathf.PerlinNoise (x * frequency, z * frequency) * amplitude;         
+
+			//get the natural noise at a coordinate, multiple that locaton by frequency, then
+			//multiply the resulting height by amplitude
+			total += Mathf.PerlinNoise (x * frequency, z * frequency) * amplitude; 
+
+			//preparing now for next iteration, multiply frequency by lacunarity factor
+			//and amplitude by gain factor
 			frequency *= lacunarity;
 			amplitude *= gain;
 		}
 
+		//all iterations complete, return the running total
 		return total;
 
 	}
