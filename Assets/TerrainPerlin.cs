@@ -75,46 +75,18 @@ public void addPass(int layer, float scale, float height, float heightMax, float
 }
 public float getNoise(float x, float z, bool colorizeVertex){
 		float[] origHeight = new float[scale.Count+1];
-		origHeight[0] = (brownianNoise(x/scale[0][0], z/scale[0][0])*height[0][0]);
+		//origHeight[0] = (brownianNoise(x/scale[0][0], z/scale[0][0])*height[0][0]);
 		Color finalColor = colorOne[0];
 
-		float finalHeight = -9999999;
+		float finalHeight = 0;
 		float minusScale = 0;
 
 		for (int layer = 0;  layer < scale.Count ; layer++){
-			for (int pass = 0;  pass < scale[layer].Count ; pass++){
+			origHeight[layer] = (brownianNoise(x/scale[layer][0], z/scale[layer][0])*height[layer][0]) - offset[layer];
+			for (int pass = 1;  pass < scale[layer].Count ; pass++){
 				float noise = (brownianNoise(x/scale[layer][pass], z/scale[layer][pass])*height[layer][pass]) - offset[layer];
-
-				//DEBUG HEIGHT STUFF
-				//noiseMax[layer] = noise;
-				//noiseMin[layer] = noise;
-				//if (layer > 0 && noise > noiseMax[layer-1]) {noiseMax[layer] = noise;}
-				//if (layer > 0 && noise < noiseMin[layer-1]) {noiseMin[layer] = noise;}
-
-
-				if (noise > heightMax[layer][pass] - offset[layer]){
-					finalHeight += heightMax[layer][pass] - offset[layer];
-
-					// THIS MAKES LAYER CLING TO PREVIOUS LAYER, DOESN'T COVER UNIFORMLY 
-					// LIKE PASS AND CAN BE COLORED, COULD BE VERY USEFUL
-					//if (layer > 0) {
-					//	origHeight[layer] += origHeight[layer-1];
-					//}
-				}
-				else if (noise > heightMin[layer][pass]){
-					finalHeight += noise;
-
-					// THIS MAKES LAYER CLING TO PREVIOUS LAYER, DOESN'T COVER UNIFORMLY 
-					// LIKE PASS AND CAN BE COLORED, COULD BE VERY USEFUL
-					//if (layer > 0) {
-					//	origHeight[layer] += origHeight[layer-1];
-					//}
-				}
-				else {
-					finalHeight += heightMin[layer][pass];
-				}
-
-				//origHeight[layer] += Mathf.Min(noise, heightMin[layer][pass]);
+				if (noise > 0) {origHeight[layer] += noise;}
+				origHeight[layer] += Mathf.Min(noise, heightMin[layer][pass]);
 				minusScale += scale[layer][pass];
 			}
 
@@ -130,9 +102,11 @@ public float getNoise(float x, float z, bool colorizeVertex){
 				//}
 			}
 
-			finalHeight = Mathf.Max(finalHeight , origHeight[layer]);
-			if ( finalHeight > noiseMax) {noiseMax = finalHeight;}
-			if ( finalHeight < noiseMin) {noiseMin = finalHeight;}
+			finalHeight = Mathf.Max(origHeight[layer] , finalHeight);
+
+
+			//if ( finalHeight > noiseMax[layer]) {noiseMax[layer] = finalHeight;}
+			//if ( finalHeight < noiseMin[layer]) {noiseMin[layer] = finalHeight;}
 
 		}
 
