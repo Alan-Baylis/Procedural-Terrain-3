@@ -85,6 +85,34 @@ public class TerrainPerlin : MonoBehaviour
 		this.offset.Add (0);
 	}
 
+	//This adds a whole new independent base layer to the terrain with its own heitmap and color parameters
+	public void addLayer (float scale, float height, float heightMax, float heightMin, float offset, Color colorOne, Color colorTwo)
+	{
+		//add a new list of floats to iterate through with getNoise()
+		this.scale.Add (new List<float> ());
+		this.height.Add (new List<float> ());
+		this.heightMax.Add (new List<float> ());
+		this.heightMin.Add (new List<float> ());
+		
+		//adds the passed in values as the first items in the newly added inner loops from above
+		this.scale [this.scale.Count - 1].Add (scale);
+		this.height [this.height.Count - 1].Add (height);
+		this.heightMax [this.heightMax.Count - 1].Add (heightMax);
+		this.heightMin [this.heightMin.Count - 1].Add (heightMin);
+		
+		//adds the color value passed in for vertex coloring of this layer
+		this.colorOne.Add (colorOne);
+		
+		//This will be used for diagnostics possibly, I may find another way
+		this.noiseMax.Add (-99999);
+		this.noiseMin.Add (99999);
+		
+		//offset is how far down the layer is pushed under the previous layer
+		//there is no inner list because passes currently do not have this funtionality
+		this.offset.Add (offset);
+		
+	}
+
 	//This adds "pass" parameters that can be used to modify a base layer, 
 	//this is done inside the inner loop of getNoise()
 	public void addPass (int layer, float scale, float height, float heightMax, float heightMin)
@@ -94,34 +122,7 @@ public class TerrainPerlin : MonoBehaviour
 		this.heightMax [layer].Add (heightMax);
 		this.heightMin [layer].Add (heightMin);
 	}
-	//This adds a whole new independent base layer to the terrain with its own heitmap and color parameters
-	public void addLayer (float scale, float height, float heightMax, float heightMin, float offset, Color colorOne, Color colorTwo)
-	{
-		//add a new list of floats to iterate through with getNoise()
-		this.scale.Add (new List<float> ());
-		this.height.Add (new List<float> ());
-		this.heightMax.Add (new List<float> ());
-		this.heightMin.Add (new List<float> ());
-
-		//adds the passed in values as the first items in the newly added inner loops from above
-		this.scale [this.scale.Count - 1].Add (scale);
-		this.height [this.height.Count - 1].Add (height);
-		this.heightMax [this.heightMax.Count - 1].Add (heightMax);
-		this.heightMin [this.heightMin.Count - 1].Add (heightMin);
-
-		//adds the color value passed in for vertex coloring of this layer
-		this.colorOne.Add (colorOne);
-
-		//This will be used for diagnostics possibly, I may find another way
-		this.noiseMax.Add (-99999);
-		this.noiseMin.Add (99999);
-
-		//offset is how far down the layer is pushed under the previous layer
-		//there is no inner list because passes currently do not have this funtionality
-		this.offset.Add (offset);
 	
-	}
-
 	//This is where heightmap data is generated for a single vertex
 	//The outer loop iterated through each layer, the inner loop iterates
 	//through every pass within each layer.

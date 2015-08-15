@@ -7,7 +7,7 @@ using System.Collections.Generic;
 	{
 
 	//Pass in a seed value, get a predictable random number between 0 and 1 million
-		public float getRand (int seed)
+		public static float getRand (int seed)
 		{
 		Random.seed = seed;
 
@@ -17,7 +17,7 @@ using System.Collections.Generic;
 	//Pass in a seed value, get TWO predictable random numbers between 0 and 1 million,
 	//Calls the previous method by passing in the seed parameter for the first number,
 	//Then uses that result as a seed for the second number, all deterministic and predictable
-		public float[] getTwoRand (int seed)
+		public static float[] getTwoRand (int seed)
 		{
 		float[] bothRandoms = new float[2];
 		bothRandoms [0] = getRand (seed);

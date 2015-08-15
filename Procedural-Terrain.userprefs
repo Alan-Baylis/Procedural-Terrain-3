@@ -1,10 +1,10 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\CreateNewMeshFidelity.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\TerrainRandomizer.cs">
     <Files>
-      <File FileName="Assets\CreateNewMeshFidelity.cs" Line="313" Column="34" />
-      <File FileName="Assets\TerrainPerlin.cs" Line="236" Column="54" />
-      <File FileName="Assets\TerrainRandomizer.cs" Line="7" Column="23" />
+      <File FileName="Assets\CreateNewMeshFidelity.cs" Line="312" Column="40" />
+      <File FileName="Assets\TerrainPerlin.cs" Line="126" Column="1" />
+      <File FileName="Assets\TerrainRandomizer.cs" Line="23" Column="19" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

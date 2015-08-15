@@ -308,8 +308,8 @@ public class CreateNewMeshFidelity : MonoBehaviour
 								zChunks++;
 						}
 
-			TerrainRandomizer rando = new TerrainRandomizer();
-			float[] randomNumbers = rando.getTwoRand(91);
+			//TerrainRandomizer rando = new TerrainRandomizer();
+			float[] randomNumbers = TerrainRandomizer.getTwoRand(90);
 			Debug.Log(   randomNumbers[0] + ", " + randomNumbers[1] );
 
 				}
