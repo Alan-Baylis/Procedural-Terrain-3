@@ -45,15 +45,17 @@ public class CreateNewMeshFidelity : MonoBehaviour
 				int iterations = (int)(chunkSize*fidelity);
 	
 
-				TerrainPerlin land = new TerrainPerlin (2f, 0f, 9999, 0, new Color(0f, 1f, 0f, 0.5f), new Color(0, 1, 0, 1));
+				TerrainPerlin land = new TerrainPerlin (2f, 0f, 9999, 0, new Color(0f, 1f, 1f, 0.5f), new Color(0, 1, 0, 1));
 				
-				//land.addLayer (20, 100, 999, 0, 60, new Color(0, 1, 0, 1), new Color(0, 1, 0, 1));
+				land.addLayer (20, 100, 15, 0, 60, new Color(0, 1, 0, 1), new Color(0, 1, 0, 1));
 				land.addLayer (75, 50, 999, 0, 25, new Color(1, 0, 0, 1), new Color(0, 1, 0, 1));
-				land.addLayer (70, 200, 25, 15, 100, new Color(0, 0, 1, 1), new Color(0, 1, 0, 1));	
+				land.addLayer (70, 200, 25, 15, 100, new Color(0, 0, 1, 1), new Color(0, 1, 0, 1));
+				land.addLayer (28, 200, 15, 10, 130, new Color(1, 0, 1, 1), new Color(0, 1, 0, 1));	
 				//land.addPass (2, 2f, 5f, 999, 0);
-				//land.addPass (3, 2, 17f, 0, 0);
+				//land.addPass (3, 2, 10f, 0, 0);
 				//land.addPass (1, 7f, 8, 0, 0);
 				//land.addPass (0, 10, 2, 0, 0);
+				land.addPass (3, 2, 15, 999, 0);
 
 
 				for (int z = 0; z < (int) iterations; z++) {
