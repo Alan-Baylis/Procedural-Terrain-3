@@ -111,6 +111,7 @@ public class CreateNewMeshFidelity : MonoBehaviour
 		meshFilter.mesh.Optimize (); 		//don't remember what this does
 		//meshFilter.mesh.MarkDynamic (); 	//don't remember what this does
 
+		//Log height diagnostics
 		Debug.Log ("MAX: " + heightDiagnostic.getMaxForLayer(1));
 		Debug.Log ("MIN: " + heightDiagnostic.getMinForLayer(1));
 		Debug.Log ("TOTAL: " + heightDiagnostic.getTotalHeightForLayer(1));

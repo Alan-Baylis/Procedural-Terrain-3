@@ -81,6 +81,7 @@ public class TerrainHeightGenerator : MonoBehaviour
 		//Here it defaults to zero because there is no preious layer
 		this.offset.Add (0);
 
+		//let heightDiagnostic class know there's a new layer
 		heightDiagnostic.addLayer ();
 
 	}
@@ -139,6 +140,7 @@ public class TerrainHeightGenerator : MonoBehaviour
 		this.seed [layer].Add (seed);
 	}
 
+	//Alternate addLayer method that automatically adds random seed for that layer
 	public void addPass (int layer, float scale, float height, float heightMax, float heightMin)
 	{
 		addPass (layer, scale, height, heightMax, heightMin, TerrainRandomizer.getMasterSeed());
@@ -220,16 +222,6 @@ public class TerrainHeightGenerator : MonoBehaviour
 					finalHeight = origHeight[layer];
 			}
 
-			if (origHeight[layer] > heightDiagnostic.getMaxForLayer(layer)) //not sure if I want to keep second condition
-			{
-				heightDiagnostic.setMaxForLayer(layer, origHeight[layer]);
-			}
-
-			if (origHeight[layer] < heightDiagnostic.getMinForLayer(layer)) //not sure if I want to keep second condition
-			{
-				heightDiagnostic.setMinForLayer(layer, origHeight[layer]);
-			}
-
 		}
 
 		//If colorizeVertex was set to true, add the final color data to the globalColor list
@@ -248,7 +240,7 @@ public class TerrainHeightGenerator : MonoBehaviour
 		//frequency is the horizontal distance or wavelength of the noise pattern per iteration/octave
 		float frequency = 1f;
 		//amplitude is the height multiplier per iteration/octave 
-		float amplitude = .53891f;
+		float amplitude = .538921f;
 		//lacunarity is the ratio of change of the frequency per iteration/octave 
 		float lacunarity = 2f;
 		//gain is what is the ratio of change of amplitude pre iteration/octave
