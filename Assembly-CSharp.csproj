@@ -51,7 +51,7 @@
      <Compile Include="Assets\CreateNewMeshSmooth.cs" />
      <Compile Include="Assets\CreateNewMeshSmooth2.cs" />
      <Compile Include="Assets\ModifyTerrain.cs" />
-     <Compile Include="Assets\TerrainPerlin.cs" />
+     <Compile Include="Assets\TerrainHeightGenerator.cs" />
      <Compile Include="Assets\TerrainPerlin2.cs" />
      <Compile Include="Assets\TerrainPerlinOrig.cs" />
      <Compile Include="Assets\TerrainRandomizer.cs" />

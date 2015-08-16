@@ -20,7 +20,7 @@ using System.Collections.Generic;
 //probably going to have to produce whole mesh here
 //send in starting coordinates and chunk size, send back entire colored mesh
 
-public class TerrainPerlin : MonoBehaviour
+public class TerrainHeightGenerator : MonoBehaviour
 {
 	//These are all parameters for the terrain layers and passes
 	//A layer a fully independent noise heightmap, a pass is a 
@@ -29,6 +29,7 @@ public class TerrainPerlin : MonoBehaviour
 	private List<List<float>> height = new List<List<float>> ();
 	private List<List<float>> heightMax = new List<List<float>> ();
 	private List<List<float>> heightMin = new List<List<float>> ();
+	private List<List<int>> seed = new List<List<int>> ();
 	private List<float> offset = new List<float> ();
 	//brownianOctaves is the number of fractal iterations each noise layer is put through
 	//height and complexity are heavily independent on this variable
@@ -50,7 +51,7 @@ public class TerrainPerlin : MonoBehaviour
 		return globalColor;
 	}
 
-	//Constructor for TerrainPerlin
+	//Method which gives all parameters to this TerrainHeightGenerator
 	//This creates a base layer with heightmap and color parameters
 	//Scale - the horizontal scale of the noise pattern
 	//Height - the vertical scale of the noise pattern 
@@ -59,7 +60,7 @@ public class TerrainPerlin : MonoBehaviour
 	//ColorOne - Lower color of the color gradient exhibited by corresponding layer
 	//ColorTwo - Upper color of the color gradient exhibited by corresponding layer
 	// *Note: The offset parameter is not passed in with the initialization of the terrain, it defaults to "0"
-	public TerrainPerlin (float scale, float height, float heightMax, float heightMin, Color colorOne, Color colorTwo)
+	public void CreateTerrainHeightGenerator (float scale, float height, float heightMax, float heightMin, Color colorOne, Color colorTwo, int seed)
 	{
 		//Adds a new list of parameters for the base layer, any added lists will represent new layers,
 		//each float value within the inner list is a pass parameter
@@ -75,6 +76,9 @@ public class TerrainPerlin : MonoBehaviour
 		this.heightMin.Add (new List<float> ());
 		this.heightMin [0].Add (heightMin);
 
+		this.seed.Add (new List<int> ());
+		this.seed [0].Add (seed);
+
 		//The following don't have inner lists because passes don't have these parameters
 
 		//The lower gradient color for the layer
@@ -83,22 +87,32 @@ public class TerrainPerlin : MonoBehaviour
 		//Offset is how far down the layer is pushed under the previous layer. 
 		//Here it defaults to zero because there is no preious layer
 		this.offset.Add (0);
+
 	}
 
+	//Alternate creation method excluding seed input parameter, uses master seed instead
+	public void CreateTerrainHeightGenerator (float scale, float height, float heightMax, float heightMin, Color colorOne, Color colorTwo)
+	{
+		CreateTerrainHeightGenerator (scale, height, heightMax, heightMin, colorOne, colorTwo, TerrainRandomizer.getMasterSeed ());
+	}
+
+
 	//This adds a whole new independent base layer to the terrain with its own heitmap and color parameters
-	public void addLayer (float scale, float height, float heightMax, float heightMin, float offset, Color colorOne, Color colorTwo)
+	public void addLayer (float scale, float height, float heightMax, float heightMin, float offset, Color colorOne, Color colorTwo, int seed)
 	{
 		//add a new list of floats to iterate through with getNoise()
 		this.scale.Add (new List<float> ());
 		this.height.Add (new List<float> ());
 		this.heightMax.Add (new List<float> ());
 		this.heightMin.Add (new List<float> ());
+		this.seed.Add (new List<int> ());
 		
 		//adds the passed in values as the first items in the newly added inner loops from above
 		this.scale [this.scale.Count - 1].Add (scale);
 		this.height [this.height.Count - 1].Add (height);
 		this.heightMax [this.heightMax.Count - 1].Add (heightMax);
 		this.heightMin [this.heightMin.Count - 1].Add (heightMin);
+		this.seed [this.seed.Count - 1].Add (seed);
 		
 		//adds the color value passed in for vertex coloring of this layer
 		this.colorOne.Add (colorOne);
@@ -113,14 +127,28 @@ public class TerrainPerlin : MonoBehaviour
 		
 	}
 
+	//Alternate addLayer method that automatically generates random seed for that layer
+	public void addLayer (float scale, float height, float heightMax, float heightMin, float offset, Color colorOne, Color colorTwo)
+	{
+		addLayer (scale, height, heightMax, heightMin, offset, colorOne, colorTwo, TerrainRandomizer.getMasterSeed());
+	}
+
+
 	//This adds "pass" parameters that can be used to modify a base layer, 
 	//this is done inside the inner loop of getNoise()
-	public void addPass (int layer, float scale, float height, float heightMax, float heightMin)
+	public void addPass (int layer, float scale, float height, float heightMax, float heightMin, int seed)
 	{
 		this.scale [layer].Add (scale);
 		this.height [layer].Add (height);
 		this.heightMax [layer].Add (heightMax);
 		this.heightMin [layer].Add (heightMin);
+		this.seed [layer].Add (seed);
+	}
+
+	public void addPass (int layer, float scale, float height, float heightMax, float heightMin)
+	{
+		addPass (layer, scale, height, heightMax, heightMin, TerrainRandomizer.getMasterSeed());
+
 	}
 	
 	//This is where heightmap data is generated for a single vertex
@@ -156,7 +184,7 @@ public class TerrainPerlin : MonoBehaviour
 		for (int layer = 0; layer < scale.Count; layer++) {
 			//sets a base height for this layer with the brownianNoise method using the height 
 			//and scale parameters of the layer and its zeroeth pass
-			origHeight [layer] = (brownianNoise (x / scale [layer] [0], z / scale [layer] [0]) * height [layer] [0]) - offset [layer];
+			origHeight [layer] = (brownianNoise ((x + TerrainRandomizer.getTwoRand(seed[layer][0])[0]) / scale [layer] [0], (z + TerrainRandomizer.getTwoRand(seed[layer][0])[1]) / scale [layer] [0]) * height [layer] [0]) - offset [layer];
 
 			//doesn't allow layer to be taller than heightMax parameter
 			if (origHeight [layer] > heightMax [layer] [0]) {
@@ -170,7 +198,7 @@ public class TerrainPerlin : MonoBehaviour
 
 				//gets noise for the pass using the passes unique parameters to be added
 				//to the layer's base height. This will be repeated for each of the layer's passes
-				float noise = (brownianNoise (x / scale [layer] [pass], z / scale [layer] [pass]) * height [layer] [pass]);
+				float noise = (brownianNoise ((x + TerrainRandomizer.getTwoRand(seed[layer][pass])[0] )/ scale [layer] [pass], (z + TerrainRandomizer.getTwoRand(seed[layer][pass])[1]) / scale [layer] [pass]) * height [layer] [pass]);
 
 				//the noise is added to the height
 				origHeight [layer] += noise;
@@ -206,7 +234,7 @@ public class TerrainPerlin : MonoBehaviour
 		return finalHeight - minusScale / 10;
 
 	}
-
+	
 	//This method fractalizes a simple perlin noise pattern when given a simple 2d coordinate
 	private float brownianNoise (float x, float z)
 	{
