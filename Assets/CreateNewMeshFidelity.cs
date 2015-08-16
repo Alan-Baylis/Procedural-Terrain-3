@@ -48,12 +48,12 @@ public class CreateNewMeshFidelity : MonoBehaviour
 		TerrainHeightGenerator land = gameObject.AddComponent<TerrainHeightGenerator> ();
 		land.CreateTerrainHeightGenerator (2f, 0f, 9999, 0, new Color (0f, 1f, 1f, 0.5f), new Color (0, 1, 0, 1));
 				
-		land.addLayer (20, 100, 15, 0, 60, new Color (0, 1, 0, 1), new Color (0, 1, 0, 1));
-		land.addLayer (75, 50, 999, 0, 25, new Color (1, 0, 0, 1), new Color (0, 1, 0, 1));
-		land.addLayer (70, 200, 25, 15, 100, new Color (0, 0, 1, 1), new Color (0, 1, 0, 1));
-		land.addLayer (28, 200, 15, 10, 130, new Color (1, 0, 1, 1), new Color (0, 1, 0, 1));	
+		land.addLayer (1, 100000, 999999999, 0, 50000, new Color (0, 1, 0, 1), new Color (0, 1, 0, 1));
+		//land.addLayer (75, 50, 999, 0, 25, new Color (1, 0, 0, 1), new Color (0, 1, 0, 1));
+		//land.addLayer (70, 200, 25, 15, 100, new Color (0, 0, 1, 1), new Color (0, 1, 0, 1));
+		//land.addLayer (28, 200, 15, 10, 130, new Color (1, 0, 1, 1), new Color (0, 1, 0, 1));	
 		//land.addPass (2, 2f, 5f, 999, 0);
-		land.addPass (3, 2, 10f, 0, 0);
+		//land.addPass (3, 2, 10f, 0, 0);
 		//land.addPass (1, 7f, 8, 0, 0);
 		//land.addPass (0, 10, 2, 0, 0);
 		//land.addPass (3, 2, 15, 999, 0);
@@ -110,6 +110,11 @@ public class CreateNewMeshFidelity : MonoBehaviour
 		meshFilter.mesh.RecalculateNormals ();
 		meshFilter.mesh.Optimize (); 		//don't remember what this does
 		//meshFilter.mesh.MarkDynamic (); 	//don't remember what this does
+
+		Debug.Log ("MAX: " + heightDiagnostic.getMaxForLayer(1));
+		Debug.Log ("MIN: " + heightDiagnostic.getMinForLayer(1));
+		Debug.Log ("TOTAL: " + heightDiagnostic.getTotalHeightForLayer(1));
+		Debug.Log ("AVG: " + heightDiagnostic.getAverageHeightForLayer(1));
 
 		return landscape;
 	}

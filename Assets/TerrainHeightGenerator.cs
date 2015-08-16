@@ -3,18 +3,15 @@ using System.Collections.Generic;
 
 //TO DO
 
-//Comment this shit
 //fidelity changed over distance (LOD)
-//add height per layer diagnostic
 //fix color bleed with min height cliffs
 //add max/min functionality to passes
-//add a random seed to noise
 //add negative passes and layers
 //allow some passes to affect all layers
 //allow some layers to affect only specific layers
 //implement second color
-// allow offset with passes for sparse effect
-// allow colors with passes (make additional constructor with colors as arguments
+//allow offset with passes for sparse effect
+//allow colors with passes (make additional constructor with colors as arguments
 
 
 //probably going to have to produce whole mesh here
@@ -40,10 +37,6 @@ public class TerrainHeightGenerator : MonoBehaviour
 	//Globalcolor is the finalized list of colors for every vertex that's passed into getNoise(), 
 	//it's accessed by CreateNewMeshFidelity to get vertex color data for the terrain mesh
 	private List<Color> globalColor = new List<Color> ();
-	//Min / Max diagnostic variables for seeing how inputs of scale correspond to actual height-
-	//output after going through the brownianNoise() method. Will likely be removed
-	public List<float> noiseMax = new List<float> ();
-	public List<float> noiseMin = new List<float> ();
 
 	//a means for the mesh generator to get color data for all vertices after generation is complete
 	public List<Color> getGlobalColor ()
@@ -88,6 +81,8 @@ public class TerrainHeightGenerator : MonoBehaviour
 		//Here it defaults to zero because there is no preious layer
 		this.offset.Add (0);
 
+		heightDiagnostic.addLayer ();
+
 	}
 
 	//Alternate creation method excluding seed input parameter, uses master seed instead
@@ -118,8 +113,7 @@ public class TerrainHeightGenerator : MonoBehaviour
 		this.colorOne.Add (colorOne);
 		
 		//This will be used for diagnostics possibly, I may find another way
-		this.noiseMax.Add (-99999);
-		this.noiseMin.Add (99999);
+		heightDiagnostic.addLayer ();
 		
 		//offset is how far down the layer is pushed under the previous layer
 		//there is no inner list because passes currently do not have this funtionality
@@ -208,19 +202,32 @@ public class TerrainHeightGenerator : MonoBehaviour
 				minusScale += scale [layer] [pass];
 			}
 
+			//Sends diagnostic info to heightDiagnostic
+			heightDiagnostic.recordHeight(layer, origHeight[layer]);
+
 			//Now that all the passes have been iterated over, we check to see if the height generated is
 			//above the minimum height for the layer and that it's higher than anything generated so far
 			//for previous layers. If the latter is false, the current layer at this point on the map 
 			//is underneath a previous layer and we default to the previous finalHeight value. If the 
 			//height didn't meet the minimum requirement for the layer, finalHeight also won't be affected
 			//and this layer's data won't represent the height/color for the vertex.
-			if (origHeight [layer] > heightMin [layer] [0] && origHeight[layer] > finalHeight) {
+			if (origHeight [layer] > heightMin [layer] [0] && origHeight[layer] > finalHeight) { //supporting only pass 0 now
 
 				//The previously mentioned requirements were met, so the height and color both get pushed up.
 				//They could bubble up higher if the succeding layers fit the same requirements on the next 
 				//iteration of the outer loop(layers)
 					finalColor = colorOne [layer];
 					finalHeight = origHeight[layer];
+			}
+
+			if (origHeight[layer] > heightDiagnostic.getMaxForLayer(layer)) //not sure if I want to keep second condition
+			{
+				heightDiagnostic.setMaxForLayer(layer, origHeight[layer]);
+			}
+
+			if (origHeight[layer] < heightDiagnostic.getMinForLayer(layer)) //not sure if I want to keep second condition
+			{
+				heightDiagnostic.setMinForLayer(layer, origHeight[layer]);
 			}
 
 		}
@@ -241,7 +248,7 @@ public class TerrainHeightGenerator : MonoBehaviour
 		//frequency is the horizontal distance or wavelength of the noise pattern per iteration/octave
 		float frequency = 1f;
 		//amplitude is the height multiplier per iteration/octave 
-		float amplitude = .55f;
+		float amplitude = .53891f;
 		//lacunarity is the ratio of change of the frequency per iteration/octave 
 		float lacunarity = 2f;
 		//gain is what is the ratio of change of amplitude pre iteration/octave
