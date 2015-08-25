@@ -46,15 +46,34 @@ public class CreateNewMeshFidelity : MonoBehaviour
 
 		//add TerrainHeightGenerator component to this gameobject, then call a method within that passes in parameters
 		TerrainHeightGenerator land = gameObject.AddComponent<TerrainHeightGenerator> ();
-		land.CreateTerrainHeightGenerator (2f, 0f, 9999, 0, new Color (0f, 1f, 1f, 0.5f), new Color (0, 1, 0, 1));
-				
-		land.addLayer (1, 100000, 999999999, 0, 50000, new Color (0, 1, 0, 1), new Color (0, 1, 0, 1));
-		//land.addLayer (75, 50, 999, 0, 25, new Color (1, 0, 0, 1), new Color (0, 1, 0, 1));
+		land.CreateTerrainHeightGenerator (500f, 20f, 9999, 0, Color.gray , new Color (0.2f, 0.6f, 0.1f, 1));
+
+
+
+		//Curve is a 4 point Logistical nonlinear regression model (sigmoid function)
+		// y = ((A-D)/(1+((x/C)^B))) + D
+		//x = 50*(((100)/(y)))-1)^(1/7.24)
+		//Inverse: x = C*(((A-D)/(y)-D))-1)^(1/B
+
+		//a = height of layer (or minimum asymtote)
+		//b = hill slope (curvature of graph)
+		//c = i think a/2, which would be half of the total height(the inflection point)
+		//d = 0, probably always 0 (maximum asymptote)
+
+		//((98.60896+2.385079)/(1+((x/50.93624)^7.239703))) + -2.385079 //Formula for predicting percent coverage from offset
+		//((100+0.785)/(1+((x/50)^7))) + -0.785 // more streamlined?\\
+		//((100+1.313)/(1+((x/50)^7.25)))-1.313 //maybe more refined
+
+		//(106.583 (100-1 X)^(1/7))/(157+200 X)^(1/7) 	//Inverse. put in a percent, get out the needed offset
+
+
+		land.addLayer (200, 100, 31, 30, 50f, new Color (.3f, .3f, .3f, 1), new Color (.2f, .2f, .65f, 1));
+		land.addLayer (75, 60, 999999999, 0, 44, new Color (.41f, .41f, .41f, 1), new Color (.4F, .2f, .1F, 1));
 		//land.addLayer (70, 200, 25, 15, 100, new Color (0, 0, 1, 1), new Color (0, 1, 0, 1));
 		//land.addLayer (28, 200, 15, 10, 130, new Color (1, 0, 1, 1), new Color (0, 1, 0, 1));	
-		//land.addPass (2, 2f, 5f, 999, 0);
+		land.addPass (2, 2f, 5f, 999, 0);
 		//land.addPass (3, 2, 10f, 0, 0);
-		//land.addPass (1, 7f, 8, 0, 0);
+		land.addPass (1, 14f, 9, 0, 0);
 		//land.addPass (0, 10, 2, 0, 0);
 		//land.addPass (3, 2, 15, 999, 0);
 
@@ -95,7 +114,7 @@ public class CreateNewMeshFidelity : MonoBehaviour
 
 			}
 		}
-				
+					
 
 		//apply all the changes made to the mesh
 		MeshFilter meshFilter = landscape.GetComponent<MeshFilter> ();
@@ -112,11 +131,12 @@ public class CreateNewMeshFidelity : MonoBehaviour
 		//meshFilter.mesh.MarkDynamic (); 	//don't remember what this does
 
 		//Log height diagnostics
-		Debug.Log ("MAX: " + heightDiagnostic.getMaxForLayer(1));
-		Debug.Log ("MIN: " + heightDiagnostic.getMinForLayer(1));
-		Debug.Log ("TOTAL: " + heightDiagnostic.getTotalHeightForLayer(1));
-		Debug.Log ("AVG: " + heightDiagnostic.getAverageHeightForLayer(1));
-
+		//Debug.Log ("MAX: " + heightDiagnostic.getMaxForLayer(1));
+		//Debug.Log ("MIN: " + heightDiagnostic.getMinForLayer(1));
+		//Debug.Log ("TOTAL: " + heightDiagnostic.getTotalHeightForLayer(1));
+		//Debug.Log ("AVG: " + heightDiagnostic.getAverageHeightForLayer(1));
+		//Debug.Log ("% DISP: " + heightDiagnostic.getPercentDisplayedForLayer (1));
+		
 		return landscape;
 	}
 

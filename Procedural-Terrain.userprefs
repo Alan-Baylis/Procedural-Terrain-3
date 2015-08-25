@@ -1,10 +1,10 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\TerrainHeightGenerator.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\CreateNewMeshFidelity.cs">
     <Files>
-      <File FileName="Assets\CreateNewMeshFidelity.cs" Line="119" Column="18" />
-      <File FileName="Assets\TerrainHeightGenerator.cs" Line="221" Column="25" />
-      <File FileName="Assets\heightDiagnostic.cs" Line="6" Column="2" />
+      <File FileName="Assets\CreateNewMeshFidelity.cs" Line="51" Column="46" />
+      <File FileName="Assets\TerrainHeightGenerator.cs" Line="243" Column="28" />
+      <File FileName="Assets\heightDiagnostic.cs" Line="38" Column="3" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

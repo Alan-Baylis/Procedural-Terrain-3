@@ -8,9 +8,11 @@ public class heightDiagnostic
 	private static List<float> maxForLayer = new List<float>();
 	//minForLayer holds the lowest current "altitude" for each layer 
 	private static List<float> minForLayer = new List<float>();
-	//heightRecord hold a record of every single height value at every point in each layer
+	//heightRecord holds a record of every single height value at every point in each layer
 	private static List<List<float>> heightRecord = new List<List<float>>();
-
+	//displayedLayerRecord holds a record of the layer that's displayed for every single point on the map
+	private static List<float> displayedLayerRecord = new List<float>();
+	
 	//method for recording the height value of a layer when calculated, 
 	//if this isn't done, no diagnostics can be made
 	public static void recordHeight(int layer, float value)
@@ -29,6 +31,11 @@ public class heightDiagnostic
 		
 	}
 
+	public static void recordDisplayedLayer(int value)
+	{
+		displayedLayerRecord.Add (value);
+	}
+		
 	//this allows records to be made for a new layer, automatically sets min and max to extremes
 	public static void addLayer()
 	{
@@ -66,7 +73,18 @@ public class heightDiagnostic
 		
 		return total / heightRecord[layer].Count;
 	}
-	
+
+	public static double getPercentDisplayedForLayer(int layer)
+	{
+		int count = 0;
+
+		foreach (int element in displayedLayerRecord)
+		{
+			if (element == layer) {count ++;}
+		}
+		return count / (double) displayedLayerRecord.Count * 100;
+	}
+		
 }
 
 

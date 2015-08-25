@@ -1,20 +1,30 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 //TO DO
 
+//change layer borders to prefer height over order of layers
+//move color management to its own class
+//make circles of terrain at once with a radius input
 //fidelity changed over distance (LOD)
-//fix color bleed with min height cliffs
+//fix color bleed with triangles. Find a way to identify verteces that have crossed layer boundaries
 //add max/min functionality to passes
 //add negative passes and layers
 //allow some passes to affect all layers
 //allow some layers to affect only specific layers
+
 //implement second color
+//color gradients will have to be assigned with two different methods:
+//first method will assign gradient based upon global height value,
+//second method will assign gradient based upon exposed height of that layer so that the 
+//bottom color will always follow the layer where it is exposed above other layers
+
+
 //allow offset with passes for sparse effect
 //allow colors with passes (make additional constructor with colors as arguments
 
 
-//probably going to have to produce whole mesh here
+//probably going to have to change to producing whole mesh here
 //send in starting coordinates and chunk size, send back entire colored mesh
 
 public class TerrainHeightGenerator : MonoBehaviour
@@ -30,13 +40,25 @@ public class TerrainHeightGenerator : MonoBehaviour
 	private List<float> offset = new List<float> ();
 	//brownianOctaves is the number of fractal iterations each noise layer is put through
 	//height and complexity are heavily independent on this variable
-	private int brownianOctaves = 4;
+	private const int brownianOctaves = 4;
 	//colorOne is a list of the colors that coincide with each terrain layer, 
 	//it's the first color in a gradient that spans the height of that layer
 	private List<Color> colorOne = new List<Color> ();
+	//colorTwo is the second color in a gradient that spans the height of that layer
+	private List<Color> colorTwo = new List<Color> ();
+	//colorsForTriangle stores 3 colors to be averaged and then applied evenly to every triangle
+	private List<Color> colorsForTriangle = new List<Color> ();
+	//layerForTriangle stores 3 layers associated with above colors
+	private List<int> layersForTriangle = new List<int> ();
 	//Globalcolor is the finalized list of colors for every vertex that's passed into getNoise(), 
 	//it's accessed by CreateNewMeshFidelity to get vertex color data for the terrain mesh
 	private List<Color> globalColor = new List<Color> ();
+
+	//master multiplier for use in noise generation. This helps final noise data match the scale of input data
+	private const float masterNoiseMultiplier = 5.25f;//3.875968992248062f;
+
+	//master multiplier which offsets layers to be perfectly zeroed at their minimum height
+	private const float masterOffsetMultiplier = 0.3f;//0.0816f;
 
 	//a means for the mesh generator to get color data for all vertices after generation is complete
 	public List<Color> getGlobalColor ()
@@ -76,7 +98,9 @@ public class TerrainHeightGenerator : MonoBehaviour
 
 		//The lower gradient color for the layer
 		this.colorOne.Add (colorOne);
-
+		//The upper gradient color for the layer
+		this.colorTwo.Add (colorTwo);
+		
 		//Offset is how far down the layer is pushed under the previous layer. 
 		//Here it defaults to zero because there is no preious layer
 		this.offset.Add (0);
@@ -110,8 +134,9 @@ public class TerrainHeightGenerator : MonoBehaviour
 		this.heightMin [this.heightMin.Count - 1].Add (heightMin);
 		this.seed [this.seed.Count - 1].Add (seed);
 		
-		//adds the color value passed in for vertex coloring of this layer
+		//adds the color values passed in for vertex coloring of this layer
 		this.colorOne.Add (colorOne);
+		this.colorTwo.Add (colorTwo);
 		
 		//This will be used for diagnostics possibly, I may find another way
 		heightDiagnostic.addLayer ();
@@ -125,7 +150,7 @@ public class TerrainHeightGenerator : MonoBehaviour
 	//Alternate addLayer method that automatically generates random seed for that layer
 	public void addLayer (float scale, float height, float heightMax, float heightMin, float offset, Color colorOne, Color colorTwo)
 	{
-		addLayer (scale, height, heightMax, heightMin, offset, colorOne, colorTwo, TerrainRandomizer.getMasterSeed());
+		addLayer (scale, height, heightMax, heightMin, offset, colorOne, colorTwo, TerrainRandomizer.getMasterSeed ());
 	}
 
 
@@ -143,15 +168,15 @@ public class TerrainHeightGenerator : MonoBehaviour
 	//Alternate addLayer method that automatically adds random seed for that layer
 	public void addPass (int layer, float scale, float height, float heightMax, float heightMin)
 	{
-		addPass (layer, scale, height, heightMax, heightMin, TerrainRandomizer.getMasterSeed());
+		addPass (layer, scale, height, heightMax, heightMin, TerrainRandomizer.getMasterSeed ());
 
 	}
 	
 	//This is where heightmap data is generated for a single vertex
-	//The outer loop iterated through each layer, the inner loop iterates
+	//The outer loop iterates through each layer, the inner loop iterates
 	//through every pass within each layer.
 	//x - the x coordinate of the vertex which we need height data for
-	//x - the y coordinate of the vertex which we need height data for
+	//y - the y coordinate of the vertex which we need height data for
 	//colorizeVertex - only send color data if this is true, setting this 
 	//to false allows for getting height data for a single vertex more than
 	//once without sending trash color data into the globalColor list
@@ -160,6 +185,9 @@ public class TerrainHeightGenerator : MonoBehaviour
 		//create an array with a size equalling the number of layers
 		//this will store the base heights for the vertex for each layer
 		float[] origHeight = new float[scale.Count + 1];
+
+		//a way of keeping up with which layer is ultimately displayed in the mesh
+		int displayedLayer = 0;
 
 		//We start out with the base layer's color as our final color
 		//if the next layer's noise data is higher than the base layer,
@@ -180,7 +208,10 @@ public class TerrainHeightGenerator : MonoBehaviour
 		for (int layer = 0; layer < scale.Count; layer++) {
 			//sets a base height for this layer with the brownianNoise method using the height 
 			//and scale parameters of the layer and its zeroeth pass
-			origHeight [layer] = (brownianNoise ((x + TerrainRandomizer.getTwoRand(seed[layer][0])[0]) / scale [layer] [0], (z + TerrainRandomizer.getTwoRand(seed[layer][0])[1]) / scale [layer] [0]) * height [layer] [0]) - offset [layer];
+			origHeight [layer] = (brownianNoise ((x + TerrainRandomizer.getTwoRand (seed [layer] [0]) [0]) / scale [layer] [0], (z + TerrainRandomizer.getTwoRand (seed [layer] [0]) [1]) / scale [layer] [0]) * height [layer] [0]) - offset [layer];
+
+			//aligns he lowest point of the layer with zero by multiplying by masterOffsetMultiplier
+			origHeight [layer] -= masterOffsetMultiplier * height [layer] [0];
 
 			//doesn't allow layer to be taller than heightMax parameter
 			if (origHeight [layer] > heightMax [layer] [0]) {
@@ -194,18 +225,15 @@ public class TerrainHeightGenerator : MonoBehaviour
 
 				//gets noise for the pass using the passes unique parameters to be added
 				//to the layer's base height. This will be repeated for each of the layer's passes
-				float noise = (brownianNoise ((x + TerrainRandomizer.getTwoRand(seed[layer][pass])[0] )/ scale [layer] [pass], (z + TerrainRandomizer.getTwoRand(seed[layer][pass])[1]) / scale [layer] [pass]) * height [layer] [pass]);
+				float noise = (brownianNoise ((x + TerrainRandomizer.getTwoRand (seed [layer] [pass]) [0]) / scale [layer] [pass], (z + TerrainRandomizer.getTwoRand (seed [layer] [pass]) [1]) / scale [layer] [pass]) * height [layer] [pass]);
 
 				//the noise is added to the height
-				origHeight [layer] += noise;
+				origHeight [layer] += noise - masterOffsetMultiplier * height [layer] [pass];
 
 				//minusScale is incremented for each time this is done and will be subtracted from
 				//the total height before it's returned
 				minusScale += scale [layer] [pass];
 			}
-
-			//Sends diagnostic info to heightDiagnostic
-			heightDiagnostic.recordHeight(layer, origHeight[layer]);
 
 			//Now that all the passes have been iterated over, we check to see if the height generated is
 			//above the minimum height for the layer and that it's higher than anything generated so far
@@ -213,20 +241,102 @@ public class TerrainHeightGenerator : MonoBehaviour
 			//is underneath a previous layer and we default to the previous finalHeight value. If the 
 			//height didn't meet the minimum requirement for the layer, finalHeight also won't be affected
 			//and this layer's data won't represent the height/color for the vertex.
-			if (origHeight [layer] > heightMin [layer] [0] && origHeight[layer] > finalHeight) { //supporting only pass 0 now
+			if (origHeight [layer] > heightMin [layer] [0] && origHeight [layer] > finalHeight) { //supporting only pass 0 now
 
 				//The previously mentioned requirements were met, so the height and color both get pushed up.
 				//They could bubble up higher if the succeding layers fit the same requirements on the next 
 				//iteration of the outer loop(layers)
-					finalColor = colorOne [layer];
-					finalHeight = origHeight[layer];
+				//finalColor = (colorOne [layer] + colorTwo[layer]) / 
+				//	(height[layer][0] /origHeight[layer]); //CURRENTLY NOT ACCOUNTING FOR HEIGHT ADDED BY PASSES OVER THE BASE LEVEL
+				finalColor = Color.Lerp (colorOne [layer], colorTwo [layer], (float)((height [layer] [0] - offset [layer]) / (origHeight [layer] * 10)));
+				//Debug.Log("color ratio" + (height[layer][0] /(origHeight[layer] *10)));
+
+				finalHeight = origHeight [layer];
+				displayedLayer = layer;
 			}
 
+			//Sends diagnostic info to heightDiagnostic
+			heightDiagnostic.recordHeight (layer, origHeight [layer]);
+			
 		}
+
+		//sends which layer was displayed for this point on the map to the heightDiagnostic class
+		heightDiagnostic.recordDisplayedLayer (displayedLayer);
 
 		//If colorizeVertex was set to true, add the final color data to the globalColor list
 		if (colorizeVertex) {
-			globalColor.Add (finalColor);
+			//We add the resulting vertex color to a list that will ultimately store
+			//three colors to be averaged and then applied evenly to all three vertices
+			//additionally, we add the displayed layer to a second list so we know which
+			//layer each color belongs to. This will only take place at borders between layers
+			colorsForTriangle.Add (finalColor);
+			layersForTriangle.Add (displayedLayer);
+
+			//If all three colors were added to the above list, we can go ahead and average them if necessary
+			if (colorsForTriangle.Count == 3) {			
+				//if all the colors are equal, this is not a border between layers, 
+				//we'll just send in the raw colors
+				if (colorsForTriangle [0] == colorsForTriangle [1] 
+					&& colorsForTriangle [1] == colorsForTriangle [2]) {
+					globalColor.Add (colorsForTriangle [0]);
+					globalColor.Add (colorsForTriangle [1]);
+					globalColor.Add (colorsForTriangle [2]);
+				}
+
+				//this triangle's verteces belong to more than one layer, therefore we know we're at a border
+				//now we begin replacing the colors of the lower layers with averages of the highest layer
+				else {
+
+					//list of colors that are within the topmost layer displayed in this triangle
+					List<Color> colorsInTopLayer = new List<Color> ();
+
+					//temp variable holding highest layer displayed of three vertices, assigned with loop
+					int highest = 0;
+					foreach (int element in layersForTriangle) {
+						if (element > highest) {
+							highest = element;
+						}
+					}
+
+					//add all colors within the highest layer to colorsInTopLayer
+					for (int i = 0; i < 3; i++) {
+						if (layersForTriangle [i] == highest) {
+							colorsInTopLayer.Add (colorsForTriangle [i]);
+						}
+					}
+
+					//this will be the average of all colors contained in the uppermost layer of the triangle
+					Color colorAverage = colorsInTopLayer [0];
+
+					//add up colors in the highest layer
+					for (int i = 1; i < colorsInTopLayer.Count; i++) {
+						colorAverage += colorsInTopLayer [i];
+					}
+
+					//now divide added colors by the number of colors added together
+					colorAverage /= colorsInTopLayer.Count;
+
+					//find out which colors arent in the uppermost layer and replace
+					//them with the average we just made, then submit color
+					for (int i = 0; i < 3; i++) {
+						if (layersForTriangle [i] != highest) 
+						{
+							colorsForTriangle [i] = colorAverage;
+						}
+
+						globalColor.Add (colorsForTriangle [i]);
+
+					}
+				}
+
+				//now we clear the temporary list of colors for the next batch/triangles
+				colorsForTriangle.Clear ();
+				layersForTriangle.Clear ();
+			}
+
+			//Debug.Log ("count: " +colorsForTriangle.Count);
+			 
+
 		}
 
 		//finally, return the ultimate finalHeight with minusScale subtracted
@@ -240,11 +350,11 @@ public class TerrainHeightGenerator : MonoBehaviour
 		//frequency is the horizontal distance or wavelength of the noise pattern per iteration/octave
 		float frequency = 1f;
 		//amplitude is the height multiplier per iteration/octave 
-		float amplitude = .538921f;
+		float amplitude = .15f;
 		//lacunarity is the ratio of change of the frequency per iteration/octave 
 		float lacunarity = 2f;
 		//gain is what is the ratio of change of amplitude pre iteration/octave
-		float gain = .55f;
+		float gain = .6f;
 		//the running total for height added up over every octave
 		float total = 0f;
 
@@ -260,6 +370,9 @@ public class TerrainHeightGenerator : MonoBehaviour
 			frequency *= lacunarity;
 			amplitude *= gain;
 		}
+
+		//multiplies the noise output to match the scale of the input
+		total *= masterNoiseMultiplier;
 
 		//all iterations complete, return the running total
 		return total;
